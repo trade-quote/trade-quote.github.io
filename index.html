@@ -389,9 +389,11 @@ function lineById(id) { return state.lines.find(l => l.id === id); }
 // Sum lines (provisional sums, preliminaries, insurance, other) are just a name and a price ex GST.
 const KINDS = {provisional:'Provisional sum', prelims:'Preliminaries', insurance:'Insurance', other:'Other'};
 const DEFAULT_TERMS = 'This quote is valid for 30 days from its date.\nPrices are fixed for the scope described. Anything outside it is a variation, priced and agreed in writing before the work starts.\nProvisional sums are allowances: the final amount is adjusted to the actual cost, up or down.\nPayment terms are as agreed in writing on acceptance.';
-// Examples to tap in; the trade edits them freely.
+// Standard exclusions every new quote starts with (editable); the job's own exclusions come first.
+const STANDARD_EXCLUSIONS = ['Council fees, permits and approvals','Groundworks, excavation and site preparation not listed above','Repairs to rotten or damaged timber beyond what is listed','Removal of hazardous materials (lead paint, asbestos)','Moving furniture, pot plants or stored items','Work outside normal working hours','Colour or product changes after work starts'];
+// Extra examples to tap in; the trade edits them freely.
 const EXAMPLES = {
-  exclusions: ['Council fees, permits and approvals','Repairs to rotten or damaged timber beyond what is listed','Moving furniture, pot plants or stored items','Work outside normal working hours','Colour or product changes after work starts','Pressure washing','Render, masonry or structural repairs','Removal of hazardous materials (lead paint, asbestos)'],
+  exclusions: ['Pressure washing','Render, masonry or structural repairs','Electrical and plumbing work','Scaffolding or elevated work platforms','Making good surfaces outside the scope','Landscaping and garden reinstatement','Rubbish removal beyond our own waste','Engineering, survey or certification'],
   terms: ['This quote is valid for 30 days from its date.','Prices are fixed for the scope described. Anything outside it is a variation, priced and agreed in writing before the work starts.','Provisional sums are allowances: the final amount is adjusted to the actual cost, up or down.','A deposit is payable on acceptance; the balance is due on completion.','We carry public liability insurance and will provide a certificate on request.','Weather delays extend the finish date by the time lost.','The client provides clear access, power and water during the work.','Any defects found during preparation are reported before further work proceeds.']
 };
 function newLine() { return {id:'X'+(++state.custom_counter),item:'',scope:'',qty:1,unit:'item',hours:0,materials_ex:0,contractor_ex:0,margin_pct:null,price_override:null,included:true,notes:'',custom:true,photos:[]}; }
@@ -518,7 +520,7 @@ function normalizeState() {
   // Proposal wording is the trade's own and optional: never seeded from the trade-facing job intro.
   state.letter ??= '';
   state.terms ??= job.default_terms || DEFAULT_TERMS;
-  for(const k of ['exclusions','assumptions','questions']) state[k] ??= k==='exclusions'?(job.exclusions||[]):[];
+  for(const k of ['exclusions','assumptions','questions']) state[k] ??= k==='exclusions'?[...new Set([...(job.exclusions||[]),...STANDARD_EXCLUSIONS])]:[];
   state.custom_counter=Math.max(state.custom_counter||0,...state.lines.map(l=>/^X\d+$/.test(l.id)?Number(l.id.slice(1)):0));
   state.lines.forEach(l=>{for(const k of ['item','scope','unit','notes']) l[k]??='';l.custom=!!l.custom;l.included=l.included!==false;});
   if(!state.sections) state.sections=structuredClone(job.default_sections || state.lines.map(l=>({name:l.item,description:'',points:[],tag:'Required',line_ids:[l.id]})));

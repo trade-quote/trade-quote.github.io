@@ -228,6 +228,12 @@ function applyBrand(j) {
   root.setProperty('--or', b.accent); root.setProperty('--or2', 'color-mix(in srgb, ' + b.accent + ' 10%, #fff)');
   $('brandName').textContent = b.name.toUpperCase(); document.title = b.name + ' Quote';
 }
+// A brand in the link (?b=vh) lets the sign-in screen show the trade's brand before a code; the job's own brand wins after sign-in.
+async function brandHint() {
+  const slug=new URLSearchParams(location.search).get('b');if(!slug||!/^[a-z0-9-]{1,32}$/.test(slug))return;
+  try{const all=await (await fetch('brands.json',{cache:'no-cache'})).json();if(Object.hasOwn(all,slug)&&!job)applyBrand({brand:all[slug]});}catch{}
+}
+brandHint();
 function showMeasurements(list) {
   const rows = Array.isArray(list) ? list.filter(m => m && m.what) : [];
   $('meas').innerHTML = rows.map(m => `<dt>${esc(m.what)}</dt><dd>${esc(m.size)}</dd>`).join(''); $('measCard').hidden = !rows.length;

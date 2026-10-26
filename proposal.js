@@ -73,7 +73,7 @@ function proposalBlocks(p, job, today) {
   blocks.push(`<section class="qp-opt"><div class="qp-kicker">Summary</div><h2>Your investment</h2><div class="qp-rule"></div><table class="qp-price"><tbody>${rows}`
     + (gst ? `<tr class="qp-sub"><td>Total ex GST</td><td class="r">${qpMoney(f.ex)}</td></tr><tr class="qp-sub"><td>GST</td><td class="r">${qpMoney(f.gst)}</td></tr><tr class="qp-tot"><td>Total inc GST</td><td class="r">${qpMoney(f.inc)}</td></tr>`
            : `<tr class="qp-tot"><td>Total</td><td class="r">${qpMoney(f.ex)}</td></tr>`) + `</tbody></table></section>`);
-  for (const [title, items] of [['Not included', p.exclusions], ['Assumptions', p.assumptions], ['Questions', p.questions]]) {
+  for (const [title, items] of [['Exclusions', p.exclusions], ['Assumptions', p.assumptions], ['Questions', p.questions], ['Terms and conditions', String(p.terms || '').split(/\r?\n/)]]) {
     const list = (items || []).filter(x => String(x).trim());
     // One block per item so a long list can break across pages; the heading travels with the first item.
     list.forEach((x, i) => blocks.push(`<div class="qp-list">${i === 0 ? `<h3>${title}</h3>` : ''}<ul><li>${qpEsc(x)}</li></ul></div>`));

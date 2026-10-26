@@ -1,5 +1,4 @@
-// Shared proposal preview for the trade page and the hub (build-vhquote-1026, 26 Oct 2026).
-// House template look (tools/presale/render_premium.py) with the job's brand accent, laid out as A4 pages.
+// Shared proposal preview for the quote page and the hub: A4 pages in the job's brand accent.
 // proposalBlocks() is pure (tested in Node); layoutProposal() needs a DOM. Expects optionPrices/quotePrice from the page.
 const QP_CSS = `
 .qp-wrap{--qp-accent:#1f2933;padding:14px 0 2px;background:#e9ecef;border-radius:8px}
@@ -57,7 +56,7 @@ function qpPriceTable(v, gst) {
 // Returns the cover plus an ordered list of blocks; each block stays whole on one page.
 function proposalBlocks(p, job, today) {
   const brand = qpBrand(job), prices = optionPrices(p), f = quotePrice(p), gst = !!p.gst_registered;
-  const meta = [['Date', today], ['Reference', job.id], ['Prepared by', p.prepared_by]].filter(([, v]) => v && String(v).trim());
+  const meta = [['Date', today], ['Reference', job.quote_ref], ['Prepared by', p.prepared_by]].filter(([, v]) => v && String(v).trim());
   const cover = `<div class="qp-band"><div class="qp-kicker">${qpEsc(brand.name)} &middot; Quote</div><h1>${qpEsc(job.title)}</h1><div class="qp-addr">${qpEsc(job.site)}</div>`
     + `<div class="qp-meta">${meta.map(([k, v]) => `<div>${k}<b>${qpEsc(v)}</b></div>`).join('')}</div></div>`;
   const blocks = [];

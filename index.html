@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow"><link rel="icon" href="data:,">
 <title>Quote page</title>
-<!-- Trade quote page v4 (26 Oct 2026, build-vhquote-1026, Aaron's polish asks): one neutral page for every trade and job.
-     Holds NO job data and no brand: the job, its brand and photos come from the vh-quote function after a valid code.
-     ?demo runs locally against demo-job.json (preview only, never published). -->
+<!-- Quote page: holds no job data. The job, its brand and photos load after a valid code. -->
 <style>
 :root{--or:#1f2933;--or2:#eef0f2;--ink:#1f2933;--mut:#52606d;--line:#e4e7eb;--bg:#f6f7f8;--ok:#2f6f3e}
 [hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Arial,Helvetica,sans-serif}
@@ -169,7 +167,8 @@ label.f{display:block}label.f span{display:block;font-size:12px;color:var(--mut)
 <script src="proposal.js"></script>
 <script>
 const FN = 'https://irwdvwlsnpxqcadpfzxt.supabase.co/functions/v1/vh-quote';
-const DEMO = new URLSearchParams(location.search).has('demo');
+// Demo data runs only on a local preview server, never on the published site.
+const DEMO = new URLSearchParams(location.search).has('demo') && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 const DEFAULT_LABOUR = null, DEFAULT_MARGIN = null; // starting points only; the trade sets their own
 const $ = (id) => document.getElementById(id);
 const money = (v) => '$' + (Math.round(v * 100) / 100).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

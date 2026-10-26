@@ -1,3 +1,704 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Quote page</title>
-<style>body{margin:0;font:16px/1.5 Arial,Helvetica,sans-serif;background:#f6f7f8;color:#1f2933}header{background:#1f2933;color:#fff;padding:14px 16px;font-weight:700;letter-spacing:.06em}main{max-width:480px;margin:60px auto;padding:0 16px}</style></head>
-<body><header>QUOTE PAGE</header><main><h1>Quote page</h1><p>This page opens shortly. You'll get a message when it's ready.</p></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><link rel="icon" href="data:,">
+<title>Quote page</title>
+<!-- Trade quote page v4 (26 Oct 2026, build-vhquote-1026, Aaron's polish asks): one neutral page for every trade and job.
+     Holds NO job data and no brand: the job, its brand and photos come from the vh-quote function after a valid code.
+     ?demo runs locally against demo-job.json (preview only, never published). -->
+<style>
+:root{--or:#1f2933;--or2:#eef0f2;--ink:#1f2933;--mut:#52606d;--line:#e4e7eb;--bg:#f6f7f8;--ok:#2f6f3e}
+[hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Arial,Helvetica,sans-serif}
+header{background:var(--or);color:#fff;padding:14px max(16px,env(safe-area-inset-left))}header b{font-size:18px;letter-spacing:.06em}
+header small{display:block;opacity:.9}
+main{max-width:1200px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 90px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:0 0 10px}.mut{color:var(--mut)}
+.routes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.route{border:2px solid var(--line);border-radius:10px;padding:12px}.route b{color:var(--or)}
+button{background:var(--or);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;font-size:14px}
+button.ghost{background:#fff;color:var(--or);border:2px solid var(--or)}button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea,select{font:inherit;font-size:16px;border:1px solid #cbd2d9;border-radius:6px;padding:6px 8px;width:100%;background:#fff;color:var(--ink)}
+.seg{display:inline-flex;border:2px solid var(--or);border-radius:8px;overflow:hidden}.seg button{border-radius:0;background:#fff;color:var(--or)}.seg button.on{background:var(--or);color:#fff}
+.tbl{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:980px}th,td{border-bottom:1px solid var(--line);padding:8px 5px;vertical-align:top;text-align:left}
+th{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}td.r,th.r{text-align:right}
+td.num input{width:78px;text-align:right}.sc{font-size:12.5px;color:var(--mut);margin-top:3px;max-width:360px}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.thumbs img{width:110px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--line);cursor:zoom-in}
+tr.off td{opacity:.45}tr.off td:first-child{opacity:1}.per{font-size:11.5px;color:var(--mut)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+label.f{display:block}label.f span{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+.sum div{background:var(--bg);border-radius:8px;padding:10px}.sum small{display:block;color:var(--mut);font-size:12px}.sum b{font-size:20px}
+.totals{display:flex;gap:24px;flex-wrap:wrap;align-items:center}.donut{width:150px;height:150px}
+.legend div{display:flex;gap:6px;align-items:center;font-size:13px;margin:2px 0}.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid var(--or);padding:10px max(16px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom));display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;z-index:5}
+.chip{font-size:12px;padding:3px 8px;border-radius:20px;background:var(--or2);color:var(--or)}.chip.ok{background:#eef5ef;color:var(--ok)}
+.prog{display:flex;align-items:center;gap:6px;font-size:13px}.pbar{width:110px;height:8px;background:var(--line);border-radius:6px;overflow:hidden;display:inline-block}.pbar i{display:block;height:100%;width:0;background:var(--or)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal img{max-width:100%;max-height:85vh;border-radius:8px}.modal p{color:#fff;text-align:center}
+.confirm{background:var(--or2);border:2px solid var(--or);border-radius:10px;padding:12px;margin-bottom:14px}
+#login{max-width:420px;margin:60px auto}.err{color:#b42318;margin-top:8px}#validation{white-space:pre-line}
+.version-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px;border-bottom:1px solid #ddd}
+.meas{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:6px 18px;margin:0}.meas dt{color:var(--mut);font-size:13px}.meas dd{margin:0;font-weight:700}
+/* option board */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:12px;margin-top:12px}
+.ocard{min-width:0;border:2px solid var(--line);border-radius:10px;padding:10px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.ocard.target{border-color:var(--or);background:var(--or2)}.ocard.before{box-shadow:-4px 0 0 var(--or)}.ocard.after{box-shadow:4px 0 0 var(--or)}
+.ohead{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.okick{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.oname{font-family:Georgia,serif;font-size:17px;border:1px solid transparent;padding:3px 5px;flex:none;min-width:0}.oname:hover,.oname:focus{border-color:#cbd2d9}
+.ohead select{width:auto;font-size:13px;padding:3px 4px}.oprice{margin-left:auto;color:var(--or);white-space:nowrap}
+.handle{background:#fff;color:var(--mut);border:1px solid var(--line);padding:4px 8px;cursor:grab;touch-action:none;font-size:16px;line-height:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap;min-height:38px;padding:4px;border-radius:8px;background:var(--bg)}
+.lchip{background:#fff;color:var(--ink);border:1px solid var(--or);border-radius:16px;padding:5px 10px;font-weight:400;font-size:13px;cursor:grab;touch-action:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lchip b{color:var(--or)}.lchip.off{opacity:.5;text-decoration:line-through}.lchip.before{box-shadow:-3px 0 0 var(--or)}
+.ocard textarea{font-size:14px}
+.newopt{border:2px dashed #cbd2d9;border-radius:10px;padding:18px;text-align:center;color:var(--mut);display:flex;flex-direction:column;justify-content:center;min-height:90px}.newopt.target{border-color:var(--or);color:var(--or);background:var(--or2)}
+.ghost-drag{position:fixed;pointer-events:none;z-index:30;opacity:.9;transform:translate(-50%,-50%) rotate(-2deg);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.dragging{opacity:.35}
+.menu{position:absolute;z-index:25;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:200px}
+.menu button{background:#fff;color:var(--ink);border:1px solid var(--line);text-align:left;font-weight:400}.menu small{color:var(--mut);padding:2px 4px}
+@media(max-width:700px){#lines{display:block}#lines tr{display:grid;grid-template-columns:1fr 1fr;border:1px solid #ddd;border-radius:8px;margin-bottom:12px;padding:8px}#lines td{display:block;min-width:0;border:0}#lines td:nth-child(2),#lines td:last-child{grid-column:1/-1}#lines td:before{content:attr(data-label);display:block;font-size:12px;color:#52606d}#lines input,#lines select{width:100%!important}.tbl{overflow:visible}.tbl table{min-width:0}.tbl thead{display:none}.bar{gap:6px}.grid2{grid-template-columns:1fr}
+ .thumbs{display:grid;grid-template-columns:repeat(3,1fr)}.thumbs img{width:100%;height:auto;aspect-ratio:11/8}.board{grid-template-columns:1fr}}
+@media print{body{background:white}body>header,body>.bar,body>.modal,body>.menu,#login,#app>*:not(#proposalPanel),#proposalPanel>.preview-tools{display:none!important}main{padding:0;max-width:none}#app,#proposalPanel{display:block!important;margin:0;padding:0;border:0}}
+</style>
+</head>
+<body>
+<header><b id="brandName">QUOTE PAGE</b><small>Quote page</small></header>
+<main>
+ <section id="login" class="card">
+  <h1>Enter your code</h1>
+  <p class="mut">You were sent a code for this job.</p>
+  <form id="loginForm"><input id="code" autocomplete="off" autocapitalize="characters" placeholder="e.g. RAW-7K2Q-9D3M" aria-label="Access code">
+  <p><button type="submit">Open the job</button></p></form>
+  <div id="loginErr" class="err" hidden></div>
+ </section>
+
+ <div id="app" hidden>
+  <section class="card">
+   <h1 id="jTitle"></h1><div class="mut" id="jSite"></div>
+   <p id="jDue"></p><p class="mut" id="jIntro"></p>
+   <div class="mut" id="who"></div>
+  </section>
+
+  <section class="card" id="measCard" hidden><h2>Measurements</h2><dl class="meas" id="meas"></dl></section>
+
+  <section class="card">
+   <h2>Two ways to price it</h2>
+   <div class="routes">
+    <div class="route"><b>Fill it in yourself</b><p class="mut">Enter your costs and margin; check the live quote below.</p></div>
+    <div class="route"><b>Let your ChatGPT do most of the work</b><p class="mut">Download the quote file, work through it in ChatGPT, then upload and check its answer.</p>
+     <p><button class="ghost" id="dlMd">Download quote file</button> <button class="ghost" id="upBtn">Upload ChatGPT file</button>
+     <input type="file" id="upFile" accept=".md,.txt,.json" hidden></p><div id="upMsg" class="mut"></div></div>
+   </div>
+  </section>
+
+  <section class="card"><h2>Versions</h2><div id="versions"></div><p id="versionMsg" role="status"></p></section>
+  <section class="card">
+   <h2>Who does the work, and your numbers</h2>
+   <div class="seg" role="group" aria-label="Who does the work"><button id="mInt" class="on">Our team</button><button id="mCon">A contractor</button></div>
+   <p class="mut" id="modeNote"></p>
+   <div class="grid2">
+    <label class="f" id="lrBox"><span>Labour cost per hour ($ ex GST, what the team costs you)</span><input id="lrate" inputmode="decimal"></label>
+    <label class="f"><span>Margin % (on the price)</span><input id="margin" inputmode="decimal"></label>
+   </div>
+  </section>
+
+  <section class="card">
+   <h2>Scope, cost and price (all ex GST)</h2>
+   <div class="tbl"><table>
+    <thead><tr><th>Doing it?</th><th>Item and scope</th><th class="r">Qty</th><th>Unit</th>
+     <th class="r ci">Hours</th><th class="r ci">Materials $</th><th class="r cc">Contractor $</th>
+     <th class="r">Cost</th><th class="r">Margin %</th><th class="r">Price</th><th>Your notes</th></tr></thead>
+    <tbody id="lines"></tbody>
+   </table></div>
+   <p><button class="ghost" id="addLine">+ Add an item</button></p>
+   <div class="grid2">
+    <label class="f"><span>Setup, travel and clean-up: cost ($ ex GST)</span><input id="setup" inputmode="decimal"></label>
+    <label class="f"><span>Contingency: cost ($ ex GST, optional)</span><input id="cont" inputmode="decimal"></label>
+    <label class="f"><span>Days on site</span><input id="days" inputmode="decimal"></label>
+    <label class="f"><span>Earliest start</span><input id="start" type="date"></label>
+    <label class="f"><span>Your name</span><input id="by"></label>
+    <label class="f"><span>Need a site look first?</span><select id="visit"><option value="no">No</option><option value="yes">Yes</option></select></label>
+   </div>
+   <label class="f" style="margin-top:10px"><span>Anything else for Aaron</span><textarea id="notes" rows="2"></textarea></label>
+  </section>
+
+  <section class="card" id="builder">
+   <h2>Proposal options</h2>
+   <label class="f"><span>Proposal wording (optional; shows under the cover of the quote)</span><textarea id="letter" rows="3" maxlength="5000"></textarea></label>
+   <p class="mut">Drag an item onto another option to combine them, or onto <b>+ new option</b> to price it on its own. Drag <b>⠿</b> to reorder. On a phone, press and hold to drag, or tap an item for a quick move.</p>
+   <div class="board" id="board"></div>
+   <p id="boardMsg" class="err" role="status"></p>
+  </section>
+
+  <section class="card">
+   <h2>Not included, assumptions and questions</h2>
+   <div class="grid2"><label class="f"><span>Not included (one per line)</span><textarea id="exclusions"></textarea></label><label class="f"><span>Assumptions (one per line)</span><textarea id="assumptions"></textarea></label><label class="f"><span>Questions (one per line)</span><textarea id="questions"></textarea></label><label class="f"><span>GST registered?</span><select id="gst"><option value="yes">Yes</option><option value="no">No</option></select></label></div>
+   <div id="validation" class="err" role="status"></div>
+  </section>
+  <section class="card">
+   <h2>Breakdown</h2>
+   <div class="totals">
+    <svg class="donut" viewBox="0 0 42 42" id="donut" role="img" aria-label="Share of the price by item"></svg>
+    <div class="legend" id="legend"></div>
+   </div>
+   <div class="sum">
+    <div><small>Estimated cost</small><b id="sCost">$0.00</b></div>
+    <div><small>Margin</small><b id="sMar">$0.00</b><small id="sMarPct"></small></div>
+    <div><small>Price ex GST</small><b id="sEx">$0.00</b></div>
+    <div><small>GST</small><b id="sGst">$0.00</b></div>
+    <div><small>Price inc GST</small><b id="sInc">$0.00</b></div>
+   </div>
+  </section>
+  <section id="proposalPanel" class="card"><div class="preview-tools"><h2>Final quote: live preview</h2><p><button id="printQuote">Final quote (PDF)</button> <button id="copyQuote" class="ghost">Copy proposal text</button></p><p id="printReason" class="mut"></p><p id="copyStatus" role="status"></p></div><div id="preview"></div></section>
+  <div id="confirmBox" class="confirm" hidden>
+   <b>Send this price to Aaron?</b> <span id="confirmTotal"></span>. You can still change it afterwards and send again.
+   <p><button id="yesSend">Yes, send it</button> <button class="ghost" id="noSend">Not yet</button></p>
+  </div>
+ </div>
+</main>
+<div class="bar" id="bar" hidden>
+ <span><span class="chip" id="saveChip">Not saved yet</span> <b id="barTotal"></b></span>
+ <span class="prog" title="How much of the quote is filled in"><span class="pbar"><i id="pFill"></i></span> <b id="pPct">0%</b> complete</span>
+ <button id="submit">Send to Aaron</button>
+</div>
+<div class="modal" id="modal" hidden><div><img id="mImg" alt=""><p id="mCap"></p></div></div>
+<div class="menu" id="moveMenu" hidden></div>
+<script src="proposal.js"></script>
+<script>
+const FN = 'https://irwdvwlsnpxqcadpfzxt.supabase.co/functions/v1/vh-quote';
+const DEMO = new URLSearchParams(location.search).has('demo');
+const DEFAULT_LABOUR = null, DEFAULT_MARGIN = null; // starting points only; the trade sets their own
+const $ = (id) => document.getElementById(id);
+const money = (v) => '$' + (Math.round(v * 100) / 100).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const n = (v) => { if (v == null || v === '') return 0; const cleaned = String(v).replace(/[$,%\s]/g, ''); if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(cleaned)) throw new Error('Enter a non-negative number'); const x = Number(cleaned); if (!Number.isFinite(x)) throw new Error('Invalid number'); return x; };
+const r2 = (v) => Math.round(v * 100) / 100;
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const COLORS = ['#e8730c', '#2f6f3e', '#1f6fb2', '#9b51e0', '#c0392b', '#16a085', '#7f8c8d', '#d4a017', '#5d4037', '#00838f'];
+let job = null, inputErrors = new Map(), saveChain = Promise.resolve(), pendingSave = false, submitting = false, lastDraftAt = 0;
+let workingVersion = null, forkVersion = null, versionRows = [];
+let CODE = '', state = { lines: [] }, photoCache = {}, saveTimer = null, source = 'page', lastSaved = '';
+
+async function call(action, extra = {}) {
+  if (DEMO) return demo(action, extra);
+  const r = await fetch(FN, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, code: CODE, ...extra }) });
+  const j = await r.json().catch(() => ({ error: 'No answer from the server.' }));
+  if (!r.ok) throw new Error(j.error || 'Something went wrong.');
+  return j;
+}
+
+// ---- preview mode (local only) ----
+let demoJob = null;
+async function demo(action, extra) {
+  if (!demoJob) demoJob = await (await fetch('demo-job.json')).json();
+  const names = Object.keys(demoJob.photo_captions);
+  if (action === 'open') {
+    const saved = JSON.parse(localStorage.getItem('vhq-demo') || 'null');
+    return { trade: 'Preview', job: demoJob, photos: names.map((name, i) => ({ id: i + 1, name, caption: demoJob.photo_captions[name] })), quote: saved };
+  }
+  if (action === 'photo') return { url: 'demo-photos/' + names[extra.id - 1] };
+  let versions=JSON.parse(localStorage.getItem('vhq-demo-versions') || '[]');
+  const legacy=JSON.parse(localStorage.getItem('vhq-demo') || 'null');
+  if(!versions.length && legacy)versions=[{...legacy,created_at:legacy.created_at||new Date().toISOString(),total_ex:legacy.payload.totals?.ex||0}];
+  if(action==='versions')return {versions:versions.slice().reverse().slice(0,100).map(({payload,...v})=>v)};
+  if(action==='version'){const quote=versions.find(v=>v.version===extra.version);if(!quote)throw new Error('Version not found');return {quote:structuredClone(quote)};}
+  if(action==='instructions'){
+    const md=await (await fetch('demo-instructions.md')).text(),quote=extra.version===undefined?versions.at(-1):versions.find(v=>v.version===extra.version);
+    if(!quote&&extra.version!==undefined)throw new Error('Version not found');
+    return quote?versionFile(md,quote,demoJob):{md,filename:demoJob.id+'-quote.md'};
+  }
+  if(action==='save'){
+    if(versions.length>=300)throw new Error('Version limit reached');
+    const quote={version:(versions.at(-1)?.version||0)+1,status:extra.status,source:extra.source,payload:structuredClone(extra.payload),total_ex:extra.payload.totals.ex,created_at:new Date().toISOString()};
+    versions.push(quote);localStorage.setItem('vhq-demo-versions',JSON.stringify(versions));localStorage.setItem('vhq-demo',JSON.stringify(quote));
+    return {ok:true,version:quote.version,status:quote.status};
+  }
+}
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('loginErr').hidden = true; CODE = $('code').value.trim();
+  try { await open(); } catch (err) { $('loginErr').textContent = err.message; $('loginErr').hidden = false; }
+});
+
+// The brand arrives with the job, after a valid code; the signed-out page stays neutral.
+function applyBrand(j) {
+  const b = qpBrand(j), root = document.documentElement.style;
+  root.setProperty('--or', b.accent); root.setProperty('--or2', 'color-mix(in srgb, ' + b.accent + ' 10%, #fff)');
+  $('brandName').textContent = b.name.toUpperCase(); document.title = b.name + ' Quote';
+}
+function showMeasurements(list) {
+  const rows = Array.isArray(list) ? list.filter(m => m && m.what) : [];
+  $('meas').innerHTML = rows.map(m => `<dt>${esc(m.what)}</dt><dd>${esc(m.size)}</dd>`).join(''); $('measCard').hidden = !rows.length;
+}
+async function open() {
+  const d = await call('open'); job = d.job;
+  $('login').hidden = true; $('app').hidden = false; $('bar').hidden = false;
+  applyBrand(d.job); showMeasurements(d.job.measurements);
+  $('jTitle').textContent = d.job.title; $('jSite').textContent = d.job.site;
+  $('jDue').textContent = d.job.due_note || ''; $('jIntro').textContent = d.job.intro || '';
+  $('who').textContent = 'Signed in for ' + d.trade + ' · ' + qpBrand(d.job).name;
+  const byName = Object.fromEntries((d.photos || []).map((p) => [p.name, p]));
+  const scopePhotos = Object.fromEntries(d.job.scope.map((s) => [s.id, (s.photos || []).map((nm) => byName[nm]).filter(Boolean)]));
+  const fresh = d.job.scope.map((s) => ({ id: s.id, item: s.item, scope: s.scope, qty: s.qty, unit: s.unit, hours: '', materials_ex: '', contractor_ex: '', margin_pct: '', included: true, notes: '', custom: false }));
+  if (d.quote && d.quote.payload) {
+    state = d.quote.payload; workingVersion=d.quote.version;
+    setChip(d.quote.status === 'submitted' ? 'Sent to Aaron (v' + d.quote.version + ')' : 'Saved (v' + d.quote.version + ')', d.quote.status === 'submitted');
+  } else state = { delivery_mode: 'internal', labour_rate: DEFAULT_LABOUR, margin_pct: DEFAULT_MARGIN, lines: fresh, setup_ex: '', contingency_ex: '', days_on_site: '', earliest_start: '', site_visit_needed: false, notes: '', prepared_by: '' };
+  state.lines.forEach((l) => { l.photos = scopePhotos[l.id] || []; });
+  normalizeState(); fillExtras(); render();
+  if (d.quote) lastSaved = JSON.stringify(payload());
+  await refreshVersions();
+}
+
+function fillExtras() {
+  $('lrate').value = state.labour_rate ?? ''; $('margin').value = state.margin_pct ?? '';
+  $('setup').value = state.setup_ex ?? ''; $('cont').value = state.contingency_ex || ''; $('days').value = state.days_on_site || '';
+  $('start').value = state.earliest_start || ''; $('by').value = state.prepared_by || ''; $('visit').value = state.site_visit_needed ? 'yes' : 'no'; $('notes').value = state.notes || '';
+  for (const k of ['letter','exclusions','assumptions','questions']) $(k).value = Array.isArray(state[k]) ? state[k].join('\n') : state[k]; $('gst').value = state.gst_registered ? 'yes' : 'no';
+  setMode(state.delivery_mode || 'internal', false);
+}
+
+function setMode(m, save = true) {
+  state.delivery_mode = m; const internal = m === 'internal';
+  $('mInt').className = internal ? 'on' : ''; $('mCon').className = internal ? '' : 'on';
+  $('lrBox').hidden = !internal;
+  $('modeNote').textContent = internal ? 'Our team: cost = hours × labour cost per hour + materials. Price = cost with your margin on top.'
+    : "A contractor: cost = the contractor's price for the line. Price = cost with your margin on top.";
+  if (save) { render(); queueSave(); }
+}
+$('mInt').onclick = () => setMode('internal'); $('mCon').onclick = () => setMode('contractor');
+
+// BEGIN PRICING CONTRACT (keep identical in page, function and tests)
+function roundMoney(v) { return Math.round((v + Number.EPSILON) * 100) / 100; }
+function numberValue(v, name, max = 1000000, nullable = false) {
+  if (nullable && v == null) return null;
+  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > max) throw new Error(name + ': invalid number');
+  return v;
+}
+function marginValue(v) { numberValue(v, 'margin', Number.MAX_VALUE); return Math.min(90, v); }
+function linePrice(l, p) {
+  const cost = p.delivery_mode === 'internal' ? l.hours * p.labour_rate + l.materials_ex : l.contractor_ex;
+  const margin = marginValue(l.margin_pct == null ? p.margin_pct : l.margin_pct);
+  const price = l.price_override == null ? cost / (1 - margin / 100) : l.price_override;
+  return { cost: roundMoney(cost), margin, price: roundMoney(price) };
+}
+function quotePrice(p) {
+  const parts = p.lines.filter(l => l.included).map(l => ({ label: l.id + ' ' + l.item, ...linePrice(l, p) }));
+  for (const [label, cost] of [['Setup', p.setup_ex || 0], ['Contingency', p.contingency_ex]]) parts.push({ label, cost, price: roundMoney(cost / (1 - marginValue(p.margin_pct) / 100)) });
+  const ex = roundMoney(parts.reduce((s, x) => s + x.price, 0));
+  const cost = roundMoney(parts.reduce((s, x) => s + x.cost, 0));
+  const gst = p.gst_registered ? roundMoney(ex * .1) : 0;
+  return { parts, cost, ex, gst, inc: roundMoney(ex + gst) };
+}
+function optionPrices(p) {
+  const total = quotePrice(p), sections = p.sections || [];
+  const base = sections.map(s => roundMoney(p.lines.filter(l => l.included && s.line_ids.includes(l.id)).reduce((v, l) => v + linePrice(l, p).price, 0)));
+  const sum = base.reduce((a, b) => a + b, 0); let used = 0, taxUsed = 0, baseUsed = 0;
+  // Allocate setup and contingency pro rata by line price; final option absorbs cent rounding.
+  return base.map((b, i) => {
+    const last = i === base.length - 1;
+    baseUsed += b;
+    const target = sum ? roundMoney(total.ex * baseUsed / sum) : roundMoney(total.ex * (i + 1) / base.length);
+    const ex = last ? roundMoney(total.ex - used) : roundMoney(target - used);
+    const taxTarget = p.gst_registered ? roundMoney((used + ex) * .1) : 0;
+    const gst = last ? roundMoney(total.gst - taxUsed) : roundMoney(taxTarget - taxUsed);
+    used = roundMoney(used + ex); taxUsed = roundMoney(taxUsed + gst);
+    return { ex, gst, inc: roundMoney(ex + gst) };
+  });
+}
+function validateQuote(p) {
+  const str = (v, name, max) => { if (typeof v !== 'string' || v.length > max) throw new Error(name + ': invalid text'); };
+  const list = (v, name, max = 100) => { if (!Array.isArray(v) || v.length > max) throw new Error(name + ': invalid list'); };
+  if (!p || !['internal', 'contractor'].includes(p.delivery_mode)) throw new Error('Invalid delivery mode');
+  for (const k of ['gst_registered', 'site_visit_needed']) if (typeof p[k] !== 'boolean') throw new Error(k + ': invalid boolean');
+  numberValue(p.labour_rate, 'labour_rate'); numberValue(p.margin_pct, 'margin_pct', 90);
+  numberValue(p.setup_ex, 'setup', 1000000, true); numberValue(p.contingency_ex, 'contingency'); numberValue(p.days_on_site, 'days', 100000, true);
+  numberValue(p.custom_counter, 'custom counter', Number.MAX_SAFE_INTEGER);
+  if (!Number.isInteger(p.custom_counter)) throw new Error('Invalid custom counter');
+  for (const [k, max] of [['letter', 5000], ['notes', 2000], ['prepared_by', 80], ['earliest_start', 10]]) str(p[k], k, max);
+  for (const k of ['assumptions', 'exclusions', 'questions']) { list(p[k], k); p[k].forEach(v => str(v, k, 1000)); }
+  list(p.lines, 'lines'); const ids = new Set();
+  p.lines.forEach(l => {
+    str(l.id, 'id', 32); if (!l.id || ids.has(l.id)) throw new Error('Duplicate or empty line id'); ids.add(l.id);
+    for (const [k, max] of [['item', 200], ['scope', 1000], ['unit', 20], ['notes', 1000]]) str(l[k], k, max);
+    if (typeof l.included !== 'boolean' || typeof l.custom !== 'boolean') throw new Error('Invalid line boolean');
+    numberValue(l.qty, 'qty', 100000); numberValue(l.hours, 'hours', 1000);
+    for (const k of ['materials_ex', 'contractor_ex']) numberValue(l[k], k);
+    numberValue(l.margin_pct, 'line margin', 90, true); numberValue(l.price_override, 'price override', 1000000, true);
+    for (const k of ['cost_ex', 'amount_ex', 'rate_ex']) if (l[k] !== undefined) numberValue(l[k], k, Number.MAX_VALUE);
+    if (l.price_override != null && (l.hours || l.materials_ex || l.contractor_ex)) throw new Error('Price override requires no cost inputs');
+  });
+  list(p.sections, 'sections', 12); const assigned = new Set();
+  p.sections.forEach(s => {
+    str(s.name, 'option name', 200); str(s.description, 'option description', 1000);
+    if (!['Required', 'Recommended', 'Optional'].includes(s.tag)) throw new Error('Invalid option tag');
+    list(s.points, 'points', 100); s.points.forEach(v => str(v, 'point', 1000)); list(s.line_ids, 'option lines');
+    s.line_ids.forEach(id => { if (!ids.has(id) || assigned.has(id)) throw new Error('Unknown or duplicate option line'); assigned.add(id); });
+  });
+  return p;
+}
+function completionProblems(p) {
+  const errors = [];
+  if (!p.lines.some(l => l.included)) errors.push('Include at least one priced line');
+  p.lines.forEach(l => { if (l.included && (!(l.qty > 0) || !(linePrice(l, p).price > 0))) errors.push(l.id + ': enter quantity and price');
+    if (l.included && p.sections.filter(s => s.line_ids.includes(l.id)).length !== 1) errors.push(l.id + ': choose one option'); });
+  if (p.setup_ex == null) errors.push('Answer setup cost (0 is allowed)');
+  if (!(p.days_on_site > 0)) errors.push('Enter days on site greater than 0');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(p.earliest_start) || !Number.isFinite(Date.parse(p.earliest_start)) || new Date(p.earliest_start).toISOString().slice(0, 10) !== p.earliest_start) errors.push('Enter a valid start date');
+  return errors;
+}
+// END PRICING CONTRACT
+// BEGIN NULLABLE ANSWERS (v3 arithmetic stays unchanged; unanswered is not zero)
+const validateAnsweredQuote = validateQuote, answeredCompletionProblems = completionProblems, answeredMarginValue = marginValue;
+marginValue = v => answeredMarginValue(v == null ? 0 : v);
+validateQuote = p => { validateAnsweredQuote({...p, labour_rate:p.labour_rate === null ? 0 : p.labour_rate, margin_pct:p.margin_pct === null ? 0 : p.margin_pct}); return p; };
+completionProblems = p => {
+  const errors = answeredCompletionProblems(p);
+  if (p.delivery_mode === 'internal' && !(p.labour_rate > 0)) errors.push('Enter labour cost per hour greater than 0');
+  if (p.margin_pct == null) errors.push('Answer margin (type 0 for no margin)');
+  return errors;
+};
+// END NULLABLE ANSWERS
+
+// BEGIN VERSION FILE
+function versionFile(md, quote, job) {
+  const p = quote.payload;
+  const current = {...p, schema:'vh-trade-quote/1', job_id:job.id, job_scope:job.scope.map(s=>s.id), version:quote.version,
+    items:p.lines.map(l=>({...l, description:l.item}))};
+  // Escape backticks so user wording cannot terminate the fenced JSON block.
+  const encoded = JSON.stringify(current,null,2).replace(/`/g,'\\u0060');
+  return {md:md+'\n\n## CURRENT QUOTE (version '+quote.version+')\n```json\n'+encoded+'\n```\n',
+    filename:job.id+'-quote-v'+quote.version+'.md',version:quote.version};
+}
+// END VERSION FILE
+
+function calc(l) { return linePrice(normalLine(l), numericState()); }
+function lineById(id) { return state.lines.find(l => l.id === id); }
+
+function render() {
+  const tb = $('lines'); tb.innerHTML = ''; const internal = state.delivery_mode === 'internal';
+  document.querySelectorAll('th.ci').forEach((e) => { e.hidden = !internal; }); document.querySelectorAll('th.cc').forEach((e) => { e.hidden = internal; });
+  // Table rows follow the proposal option order.
+  const ordered=state.sections.flatMap(section=>section.line_ids).map(lineById).filter(Boolean);
+  ordered.forEach(l => {
+    const i=state.lines.indexOf(l), c = calc(l), tr = document.createElement('tr'); tr.dataset.row=l.id; tr.className=l.included?'':'off';
+    tr.innerHTML = `<td><select data-i="${i}" data-k="included" style="width:58px"><option value="Y">Y</option><option value="N">N</option></select></td>
+     <td>${l.custom ? `<input data-i="${i}" data-k="item" value="${esc(l.item)}" placeholder="Item name">` : `<b>${esc(l.id)}</b> ${esc(l.item)}<div class="sc">${esc(l.scope)}</div>`}<div class="thumbs" id="th${i}"></div></td>
+     <td class="num r"><input data-i="${i}" data-k="qty" value="${esc(l.qty)}" inputmode="decimal"></td>
+     <td>${l.custom ? `<input data-i="${i}" data-k="unit" value="${esc(l.unit)}" style="width:58px">` : esc(l.unit)}</td>
+     <td class="num r" ${internal ? '' : 'hidden'}><input data-i="${i}" data-k="hours" value="${esc(l.hours)}" inputmode="decimal" placeholder="h"></td>
+     <td class="num r" ${internal ? '' : 'hidden'}><input data-i="${i}" data-k="materials_ex" value="${esc(l.materials_ex)}" inputmode="decimal" placeholder="$"></td>
+     <td class="num r" ${internal ? 'hidden' : ''}><input data-i="${i}" data-k="contractor_ex" value="${esc(l.contractor_ex)}" inputmode="decimal" placeholder="$"></td>
+     <td class="r" data-cost>${money(c.cost)}</td>
+     <td class="num r"><input data-i="${i}" data-k="margin_pct" value="${esc(l.margin_pct)}" inputmode="decimal" placeholder="${esc(state.margin_pct)}"></td>
+     <td class="r" data-price><b>${money(c.price)}</b><div class="per">${n(l.qty) ? money(c.price / n(l.qty)) + '/' + esc(l.unit) : ''}</div></td>
+     <td><input data-i="${i}" data-k="notes" value="${esc(l.notes)}" placeholder="Changes, product, coats">${l.custom ? ` <button class="ghost" data-del="${i}" style="margin-top:4px;padding:3px 8px">Remove</button>` : ''}</td>`;
+    tb.appendChild(tr); tr.querySelector('select').value = l.included ? 'Y' : 'N';
+    (l.photos || []).forEach((p) => loadThumb(p, $('th' + i)));
+  });
+  document.querySelectorAll('#lines tr[data-row]').forEach(tr => [...tr.children].forEach((td,i) => td.dataset.label=['Doing it?','Scope','Quantity','Unit','Hours','Materials','Contractor','Cost','Margin %','Price','Notes'][i]));
+  renderBoard(); totals();
+}
+
+async function loadThumb(p, box) {
+  const img = document.createElement('img'); img.alt = p.caption; img.title = p.caption; box.appendChild(img);
+  img.src = await photoUrl(p);
+  img.onclick = () => { $('mImg').src = img.src; $('mCap').textContent = p.caption; $('modal').hidden = false; };
+}
+function photoUrl(p) {
+  if (!photoCache[p.id]) photoCache[p.id] = call('photo', { id: p.id }).then((r) => r.url || ('data:' + r.mime + ';base64,' + r.b64));
+  return photoCache[p.id];
+}
+$('modal').onclick = () => { $('modal').hidden = true; };
+
+function figures() { return quotePrice(numericState()); }
+
+function totals() {
+  const f = figures();
+  $('sCost').textContent = money(f.cost); $('sMar').textContent = money(f.ex - f.cost);
+  $('sMarPct').textContent = f.ex ? ((f.ex - f.cost) / f.ex * 100).toFixed(1) + '% of the price' : '';
+  $('sEx').textContent = money(f.ex); $('sGst').textContent = money(f.gst); $('sInc').textContent = money(f.inc);
+  $('barTotal').textContent = money(f.ex) + ' ex GST';
+  let off = 25, svg = '<circle cx="21" cy="21" r="15.9" fill="none" stroke="#e4e7eb" stroke-width="6"/>', leg = '';
+  f.parts.forEach((p, i) => { const pc = f.ex ? p.price / f.ex * 100 : 0, c = COLORS[i % COLORS.length];
+    svg += `<circle cx="21" cy="21" r="15.9" fill="none" stroke="${c}" stroke-width="6" stroke-dasharray="${pc} ${100 - pc}" stroke-dashoffset="${off}"/>`; off -= pc;
+    leg += `<div><i style="background:${c}"></i>${esc(p.label)}: ${money(p.price)} (${pc.toFixed(0)}%)</div>`; });
+  $('donut').innerHTML = svg; $('legend').innerHTML = leg || '<div class="mut">Prices show here as you fill them in.</div>';
+  boardPrices(); updateCompletion(); renderPreview();
+  return f;
+}
+function normalLine(l) {
+  const {photos, ...raw} = l;
+  for (const k of ['qty','hours','materials_ex','contractor_ex']) raw[k] = n(l[k]);
+  raw.margin_pct = l.margin_pct === '' || l.margin_pct == null ? null : Math.min(90,n(l.margin_pct));
+  raw.price_override = l.price_override == null || l.price_override === '' ? null : n(l.price_override);
+  return raw;
+}
+function numericState() {
+  return {...state, labour_rate:state.labour_rate == null || state.labour_rate === '' ? null : n(state.labour_rate),margin_pct:state.margin_pct == null || state.margin_pct === '' ? null : Math.min(90,n(state.margin_pct)),
+    setup_ex:state.setup_ex === '' || state.setup_ex == null ? null : n(state.setup_ex),contingency_ex:n(state.contingency_ex),
+    days_on_site:state.days_on_site === '' || state.days_on_site == null ? null : n(state.days_on_site),lines:state.lines.map(normalLine)};
+}
+function payload() {
+  const p = numericState(); validateQuote(p);
+  p.lines=p.lines.map(l => {const c=linePrice(l,p);return {...l,cost_ex:c.cost,amount_ex:c.price,rate_ex:l.qty?roundMoney(c.price/l.qty):0};});
+  const {cost,ex,gst,inc}=quotePrice(p);p.totals={cost,ex,gst,inc};return p;
+}
+function setChip(t, ok) { $('saveChip').textContent = t; $('saveChip').className = 'chip' + (ok ? ' ok' : ''); }
+
+function queueSave() {
+  if(submitting) return;
+  setChip('Unsaved changes'); clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>save(),Math.max(1500,3100-(Date.now()-lastDraftAt)));
+}
+async function save(status='draft') {
+  if(inputErrors.size) {setChip('Fix invalid inputs before saving');return;}
+  if(status==='draft') pendingSave=true;
+  saveChain=saveChain.catch(()=>{}).then(async()=>{
+    if(status==='draft' && !pendingSave) return;
+    pendingSave=false;
+    const p=payload(), body=JSON.stringify(p);
+    if(status==='draft' && body===lastSaved) return;
+    if(status==='submitted' && completionProblems(p).length) throw new Error(completionProblems(p).join('; '));
+    if(status==='draft' && Date.now()-lastDraftAt<3100) await new Promise(resolve=>setTimeout(resolve,3100-(Date.now()-lastDraftAt)));
+    setChip(status==='submitted'?'Sending…':'Saving…');
+    const r=await call('save',{status,source,payload:p,...(forkVersion==null?{}:{fork_version:forkVersion})}); lastSaved=body;
+    workingVersion=r.version;forkVersion=null;
+    if(status==='draft') lastDraftAt=Date.now();
+    setChip(status==='submitted'?'Sent to Aaron (v'+r.version+')':'Saved (v'+r.version+')',status==='submitted');
+    refreshVersions().catch(e=>{$('versionMsg').textContent=e.message;});
+  });
+  try { await saveChain; } catch(e) {setChip('Not saved: '+e.message);}
+}
+function normalizeState() {
+  state.gst_registered ??= true; state.site_visit_needed ??= false;
+  // Proposal wording is the trade's own and optional: never seeded from the trade-facing job intro.
+  state.letter ??= '';
+  for(const k of ['exclusions','assumptions','questions']) state[k] ??= k==='exclusions'?(job.exclusions||[]):[];
+  state.custom_counter=Math.max(state.custom_counter||0,...state.lines.map(l=>/^X\d+$/.test(l.id)?Number(l.id.slice(1)):0));
+  state.lines.forEach(l=>{for(const k of ['item','scope','unit','notes']) l[k]??='';l.custom=!!l.custom;l.included=l.included!==false;});
+  if(!state.sections) state.sections=structuredClone(job.default_sections || state.lines.map(l=>({name:l.item,description:'',points:[],tag:'Required',line_ids:[l.id]})));
+  state.sections.forEach(s=>{s.description??='';s.points??=[];s.tag??='Required';});
+  assignLines();
+}
+function assignLines() {
+  const ids=new Set(state.lines.map(l=>l.id));state.sections.forEach(s=>s.line_ids=s.line_ids.filter(id=>ids.has(id)));state.sections=state.sections.filter(s=>s.line_ids.length);
+  for(const l of state.lines) if(!state.sections.some(s=>s.line_ids.includes(l.id))) {
+    if(state.sections.length<12) state.sections.push({name:l.item||l.id,description:'',points:[],tag:'Required',line_ids:[l.id]});
+    else state.sections[state.sections.length-1].line_ids.push(l.id);
+  }
+}
+function updateCompletion() {
+  let problems=[...inputErrors.values()];
+  try {const p=numericState();validateQuote(p);problems.push(...completionProblems(p));} catch(e){problems.push(e.message);}
+  const units=state.lines.length*2+4, pct=problems.length?Math.max(0,Math.min(99,Math.floor((units-problems.length)/units*100))):100;
+  $('pPct').textContent=pct+'%';$('pFill').style.width=pct+'%';
+  $('validation').textContent=problems.length?'To finish:\n• '+problems.join('\n• '):'Quote complete. Check the preview, then send.';
+  $('submit').disabled=!!problems.length||submitting;$('printQuote').disabled=!!problems.length;
+  $('printReason').textContent=problems.length?'PDF available when complete: '+problems.join('; '):'Choose Save as PDF in the print dialog.';
+  return problems;
+}
+function acceptInput(key,value,apply,max=1000000) {
+  try {const x=n(value);numberValue(x,key,max);apply(x);inputErrors.delete(key);totals();queueSave();}
+  catch(e){inputErrors.set(key,key+': '+e.message);updateCompletion();}
+}
+function refreshRow(tr,l) {const c=calc(l);tr.querySelector('[data-cost]').textContent=money(c.cost);tr.querySelector('[data-price]').textContent=money(c.price);}
+$('lines').addEventListener('input',e=>{
+  const t=e.target,{i,k}=t.dataset;if(i===undefined||k==='included')return;
+  const l=state.lines[i];
+  if(['qty','hours','materials_ex','contractor_ex','margin_pct'].includes(k)) acceptInput(l.id+' '+k,t.value,x=>{l[k]=k==='margin_pct'?(t.value===''?null:Math.min(90,x)):x;if(k==='margin_pct'&&x>90)t.value='90';delete l.price_override;refreshRow(t.closest('tr'),l);},k==='qty'?100000:k==='hours'?1000:1000000);
+  else {if(k==='item'){const section=state.sections.find(s=>s.line_ids.length===1&&s.line_ids[0]===l.id);if(section&&section.name===l.item)section.name=t.value;}l[k]=t.value;if(k==='item')renderBoard();totals();queueSave();}
+});
+$('lines').addEventListener('change',e=>{const t=e.target;if(t.dataset.k==='included'){state.lines[t.dataset.i].included=t.value==='Y';assignLines();render();queueSave();}});
+$('lines').addEventListener('click',e=>{const i=e.target.dataset.del;if(i!==undefined){const id=state.lines[i].id;state.lines.splice(+i,1);for(const key of inputErrors.keys())if(key.startsWith(id+' '))inputErrors.delete(key);assignLines();render();queueSave();}});
+$('addLine').onclick=()=>{if(state.lines.length>=100)return;const id='X'+(++state.custom_counter);state.lines.push({id,item:'',scope:'',qty:1,unit:'item',hours:0,materials_ex:0,contractor_ex:0,margin_pct:null,included:true,notes:'',custom:true,photos:[]});assignLines();render();queueSave();};
+for(const [id,k] of [['lrate','labour_rate'],['margin','margin_pct'],['setup','setup_ex'],['cont','contingency_ex'],['days','days_on_site']]) $(id).oninput=()=>acceptInput(k,$(id).value,x=>{state[k]=['setup_ex','days_on_site','labour_rate','margin_pct'].includes(k)&&$(id).value===''?null:k==='margin_pct'?Math.min(90,x):x;if(k==='margin_pct'&&x>90)$(id).value='90';document.querySelectorAll('#lines tr[data-row]').forEach(tr=>refreshRow(tr,state.lines.find(l=>l.id===tr.dataset.row)));},k==='days_on_site'?100000:1000000);
+for(const [id,k] of [['start','earliest_start'],['by','prepared_by'],['notes','notes'],['letter','letter'],['exclusions','exclusions'],['assumptions','assumptions'],['questions','questions']]) $(id).oninput=()=>{state[k]=['exclusions','assumptions','questions'].includes(k)?$(id).value.split('\n').filter(x=>x.trim()):$(id).value;totals();queueSave();};
+$('visit').onchange=()=>{state.site_visit_needed=$('visit').value==='yes';queueSave();};
+$('gst').onchange=()=>{state.gst_registered=$('gst').value==='yes';totals();queueSave();};
+$('submit').onclick=()=>{if(updateCompletion().length)return;$('confirmTotal').textContent=money(figures().ex)+' ex GST';$('confirmBox').hidden=false;$('confirmBox').scrollIntoView({behavior:'smooth'});};
+$('noSend').onclick=()=>{$('confirmBox').hidden=true;};
+$('yesSend').onclick=async()=>{if(submitting||updateCompletion().length)return;submitting=true;$('confirmBox').hidden=true;clearTimeout(saveTimer);pendingSave=false;document.querySelectorAll('#app input,#app textarea,#app select,#app button').forEach(e=>e.disabled=true);await save('submitted');submitting=false;document.querySelectorAll('#app input,#app textarea,#app select,#app button').forEach(e=>e.disabled=false);updateCompletion();};
+
+// OPTION BOARD: one card per proposal option; line chips move between cards. Data shape stays sections[].line_ids.
+function ownSection(l) {return {name:l.item||l.id,description:'',points:[],tag:'Required',line_ids:[l.id]};}
+// Destination is an insertion boundary in the original list.
+function reorderSection(from,to) {if(from<0||from>=state.sections.length)return;const [s]=state.sections.splice(from,1);state.sections.splice(to>from?to-1:to,0,s);}
+// to = option index or 'new'; beforeId places the line ahead of that chip.
+function moveLine(id,to,beforeId=null) {
+  const from=state.sections.findIndex(s=>s.line_ids.includes(id));if(from<0)return;
+  const src=state.sections[from];
+  if(to==='new') {
+    if(src.line_ids.length===1){reorderSection(from,state.sections.length);return;}
+    if(state.sections.length>=12)throw new Error('Maximum 12 options. Combine others first.');
+    src.line_ids=src.line_ids.filter(v=>v!==id);state.sections.push(ownSection(lineById(id)));return;
+  }
+  const dst=state.sections[to];if(!dst)return;
+  if(from===to) {
+    if(beforeId==null||beforeId===id)return;
+    src.line_ids=src.line_ids.filter(v=>v!==id);src.line_ids.splice(src.line_ids.indexOf(beforeId),0,id);return;
+  }
+  // A card left empty folds its wording into the destination rather than losing it.
+  if(src.line_ids.length===1) {
+    if(dst.points.length+src.points.length>100 || [dst.description,src.description].filter(Boolean).join(' ').length>1000)throw new Error('Shorten the wording before combining these options');
+    dst.points.push(...src.points);dst.description=[dst.description,src.description].filter(Boolean).join(' ');
+  }
+  src.line_ids=src.line_ids.filter(v=>v!==id);
+  const at=beforeId==null?-1:dst.line_ids.indexOf(beforeId);
+  if(at<0)dst.line_ids.push(id);else dst.line_ids.splice(at,0,id);
+  state.sections=state.sections.filter(s=>s.line_ids.length);
+}
+function lineChip(id) {
+  const l=lineById(id);if(!l)return '';
+  return `<button type="button" class="lchip${l.included?'':' off'}" data-chip="${esc(id)}" title="${esc(l.item)}"><b>${esc(id)}</b> ${esc(l.item)}</button>`;
+}
+function renderBoard() {
+  $('board').innerHTML=state.sections.map((s,si)=>`<div class="ocard" data-card="${si}">
+    <div class="ohead"><button type="button" class="handle" data-card-handle="${si}" aria-label="Move option ${si+1}">⠿</button><span class="okick">Option ${si+1}</span>
+     <select data-section="${si}" data-field="tag" aria-label="Tag">${['Required','Recommended','Optional'].map(t=>`<option ${s.tag===t?'selected':''}>${t}</option>`).join('')}</select><b class="oprice" data-oprice="${si}"></b></div>
+    <input class="oname" data-section="${si}" data-field="name" value="${esc(s.name)}" maxlength="200" aria-label="Option name">
+    <div class="chips" data-drop-card="${si}">${s.line_ids.map(lineChip).join('')}</div>
+    <label class="f"><span>Description (optional)</span><textarea data-section="${si}" data-field="description" rows="2" maxlength="1000">${esc(s.description)}</textarea></label>
+    <label class="f"><span>Points, one per line (optional)</span><textarea data-section="${si}" data-field="points" rows="3">${esc(s.points.join('\n'))}</textarea></label>
+   </div>`).join('')+`<div class="newopt" data-new="1"><b>+ new option</b><small>Drop an item here to price it on its own</small></div>`;
+  boardPrices();
+}
+function boardPrices() {
+  let prices=[];try{prices=optionPrices(numericState());}catch{}
+  document.querySelectorAll('[data-oprice]').forEach(b=>{const v=prices[+b.dataset.oprice];b.textContent=v?money(v.ex):'';});
+}
+function boardChange(action) {$('boardMsg').textContent='';try{action();render();queueSave();}catch(e){$('boardMsg').textContent=e.message;}}
+$('board').addEventListener('input',e=>{const t=e.target;if(t.dataset.section===undefined)return;const s=state.sections[+t.dataset.section];s[t.dataset.field]=t.dataset.field==='points'?t.value.split('\n').filter(x=>x.trim()):t.value;totals();queueSave();});
+$('board').addEventListener('change',e=>{const t=e.target;if(t.dataset.field==='tag'){state.sections[+t.dataset.section].tag=t.value;totals();queueSave();}});
+
+// Pointer drag works for mouse and touch alike: mouse starts after a small move, touch after a short press.
+let drag=null,suppressClick=false;
+function dropTarget(x,y) {
+  const el=document.elementFromPoint(x,y);if(!el)return null;
+  if(el.closest('[data-new]'))return {kind:'new',el:el.closest('[data-new]')};
+  const chip=el.closest('[data-chip]'),card=el.closest('[data-card]');
+  if(drag.kind==='line'&&chip&&chip.dataset.chip!==drag.id)return {kind:'chip',el:chip,card:+chip.closest('[data-card]').dataset.card,before:chip.dataset.chip};
+  if(card){const r=card.getBoundingClientRect(),after=drag.kind==='card'&&x>r.left+r.width/2;return {kind:'card',el:card,card:+card.dataset.card,after};}
+  return null;
+}
+function clearMarks() {document.querySelectorAll('#board .target,#board .before,#board .after').forEach(e=>e.classList.remove('target','before','after'));}
+function startDrag() {
+  if(!drag||drag.active)return;drag.active=true;clearTimeout(drag.timer);
+  drag.ghost=drag.src.cloneNode(true);drag.ghost.classList.add('ghost-drag');drag.ghost.style.width=drag.src.offsetWidth+'px';document.body.appendChild(drag.ghost);
+  drag.src.classList.add('dragging');if(navigator.vibrate)navigator.vibrate(15);moveGhost(drag.x,drag.y);
+}
+function moveGhost(x,y) {
+  drag.ghost.style.left=x+'px';drag.ghost.style.top=y+'px';clearMarks();
+  const t=dropTarget(x,y);drag.target=t;if(!t)return;
+  if(t.kind==='chip')t.el.classList.add('before');else if(t.kind==='card')t.el.classList.add(drag.kind==='card'?(t.after?'after':'before'):'target');else t.el.classList.add('target');
+}
+function endDrag() {
+  if(!drag)return;clearTimeout(drag.timer);const d=drag;drag=null;
+  if(!d.active)return;suppressClick=true;setTimeout(()=>{suppressClick=false;},0);
+  d.ghost.remove();d.src.classList.remove('dragging');clearMarks();const t=d.target;if(!t)return;
+  if(d.kind==='line')boardChange(()=>{if(t.kind==='new')moveLine(d.id,'new');else if(t.kind==='chip')moveLine(d.id,t.card,t.before);else moveLine(d.id,t.card);});
+  else if(t.kind==='new')boardChange(()=>reorderSection(d.id,state.sections.length));
+  else if(t.kind==='card'&&t.card!==d.id)boardChange(()=>reorderSection(d.id,t.card+(t.after?1:0)));
+}
+$('board').addEventListener('pointerdown',e=>{
+  const chip=e.target.closest('[data-chip]'),handle=e.target.closest('[data-card-handle]');if(!chip&&!handle||e.button>0)return;
+  closeMenu();
+  drag={kind:chip?'line':'card',id:chip?chip.dataset.chip:+handle.dataset.cardHandle,src:chip||handle.closest('[data-card]'),x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,touch:e.pointerType!=='mouse',active:false};
+  if(drag.touch)drag.timer=setTimeout(startDrag,320);
+});
+window.addEventListener('pointermove',e=>{
+  if(!drag)return;drag.x=e.clientX;drag.y=e.clientY;const moved=Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0);
+  if(!drag.active){if(!drag.touch&&moved>5)startDrag();else if(drag.touch&&moved>10){clearTimeout(drag.timer);drag=null;}return;}
+  e.preventDefault();moveGhost(e.clientX,e.clientY);
+},{passive:false});
+window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',()=>{if(drag&&drag.active){drag.target=null;endDrag();}else if(drag){clearTimeout(drag.timer);drag=null;}});
+// Tap fallback: a small "move to" menu.
+function closeMenu(){$('moveMenu').hidden=true;$('moveMenu').innerHTML='';}
+function openMenu(anchor,html){const m=$('moveMenu'),r=anchor.getBoundingClientRect();m.innerHTML=html;m.hidden=false;m.style.left=Math.max(8,Math.min(r.left+scrollX,scrollX+document.documentElement.clientWidth-m.offsetWidth-8))+'px';m.style.top=(r.bottom+scrollY+4)+'px';}
+$('board').addEventListener('click',e=>{
+  if(suppressClick)return;
+  const chip=e.target.closest('[data-chip]'),handle=e.target.closest('[data-card-handle]');
+  if(chip){const id=chip.dataset.chip,si=state.sections.findIndex(s=>s.line_ids.includes(id));
+    openMenu(chip,`<small>Move ${esc(id)} to</small>`+state.sections.map((s,i)=>i===si?'':`<button type="button" data-move-line="${esc(id)}" data-to="${i}">Option ${i+1}: ${esc(s.name)}</button>`).join('')+(state.sections[si].line_ids.length>1?`<button type="button" data-move-line="${esc(id)}" data-to="new">+ New option</button>`:'')+'<button type="button" data-close="1">Cancel</button>');}
+  else if(handle){const i=+handle.dataset.cardHandle;
+    openMenu(handle,`<small>Move option ${i+1}</small>`+(i>0?`<button type="button" data-move-card="${i}" data-to="${i-1}">Move up</button>`:'')+(i<state.sections.length-1?`<button type="button" data-move-card="${i}" data-to="${i+2}">Move down</button>`:'')+'<button type="button" data-close="1">Cancel</button>');}
+});
+$('moveMenu').addEventListener('click',e=>{const d=e.target.dataset;closeMenu();
+  if(d.moveLine)boardChange(()=>moveLine(d.moveLine,d.to==='new'?'new':+d.to));
+  if(d.moveCard!==undefined)boardChange(()=>reorderSection(+d.moveCard,+d.to));});
+document.addEventListener('click',e=>{if(!$('moveMenu').hidden&&!e.target.closest('#moveMenu,[data-chip],[data-card-handle]'))closeMenu();});
+
+function showVersions() {
+  $('versions').innerHTML=versionRows.map(v=>`<div class="version-row"><span>v${v.version} · ${v.status==='submitted'?'Sent':'Draft'} · ${money(v.total_ex)} · ${esc(new Date(v.created_at).toLocaleString('en-AU'))}${v.version===workingVersion?' · Working copy':''}</span><button data-open-version="${v.version}">Open</button><button class="ghost" data-file-version="${v.version}">Quote file</button></div>`).join('')||'No saved versions yet.';
+}
+async function refreshVersions(){const r=await call('versions');versionRows=r.versions||[];showVersions();}
+async function openVersion(version) {
+  if(submitting)return;
+  submitting=true;document.querySelectorAll('#app input,#app textarea,#app select,#app button').forEach(e=>e.disabled=true);
+  try {
+  clearTimeout(saveTimer);await save();await saveChain;
+  // Do not discard invalid or failed unsaved edits.
+  if(inputErrors.size||JSON.stringify(payload())!==lastSaved)throw new Error('Save or fix the current changes before opening another version');
+  const {quote}=await call('version',{version}),photos=Object.fromEntries(state.lines.map(l=>[l.id,l.photos]));
+  const customCounter=state.custom_counter;
+  state=structuredClone(quote.payload);state.custom_counter=Math.max(state.custom_counter||0,customCounter);state.lines.forEach(l=>l.photos=photos[l.id]||[]);
+  workingVersion=quote.version;forkVersion=quote.version;source=quote.source||'page';inputErrors.clear();normalizeState();fillExtras();render();
+  lastSaved=JSON.stringify(payload());setChip('Opened v'+version+' — next change saves a new version');showVersions();
+  } finally {submitting=false;document.querySelectorAll('#app input,#app textarea,#app select,#app button').forEach(e=>e.disabled=false);updateCompletion();}
+}
+async function downloadVersion(version) {
+  try {
+    if(version===undefined){clearTimeout(saveTimer);await save();await saveChain;if(inputErrors.size||JSON.stringify(payload())!==lastSaved)throw new Error('Save or fix the current changes before downloading');version=workingVersion;}
+    const {md,filename}=await call('instructions',version==null?{}:{version});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));a.download=filename||(job.id+'-quote.md');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }catch(e){$('versionMsg').textContent=e.message;}
+}
+$('versions').onclick=async e=>{try{const d=e.target.dataset;if(d.openVersion)await openVersion(+d.openVersion);if(d.fileVersion)await downloadVersion(+d.fileVersion);}catch(error){$('versionMsg').textContent=error.message;}};
+function renderPreview() {
+  const p=numericState();
+  if(!document.head){$('preview').innerHTML=proposalText(p,job,'');return;}
+  layoutProposal($('preview'),p,job);
+}
+$('printQuote').onclick=()=>{if(!updateCompletion().length)window.print();};
+$('copyQuote').onclick=async()=>{const text=$('preview').innerText;try{await navigator.clipboard.writeText(text);$('copyStatus').textContent='Proposal text copied.';}catch{const selection=window.getSelection(),range=document.createRange();range.selectNodeContents($('preview'));selection.removeAllRanges();selection.addRange(range);$('copyStatus').textContent='Proposal selected. Use Copy on your device.';}};
+$('dlMd').onclick=()=>downloadVersion();
+$('upBtn').onclick=()=>$('upFile').click();
+function importDocument(q) {
+  if(!q || q.schema!=='vh-trade-quote/1'||!Array.isArray(q.items)||!q.items.length||q.items.length>100)throw new Error('Expected vh-trade-quote/1 with price lines');
+  if(q.job_id!==undefined && q.job_id!==job.id)throw new Error('File belongs to a different job');
+  if(q.job!==undefined && ![job.id,job.title,job.site].includes(q.job))throw new Error('File job does not match this job');
+  for(const k of ['labour_rate','margin_pct','setup_ex','contingency_ex','days_on_site']) if(q[k]!==undefined) numberValue(q[k],k,k==='margin_pct'?90:k==='days_on_site'?100000:1000000,['setup_ex','days_on_site','labour_rate','margin_pct'].includes(k));
+  if(q.job_scope!==undefined && (!Array.isArray(q.job_scope)||q.job_scope.some(id=>typeof id!=='string')||new Set(q.job_scope).size!==q.job_scope.length))throw new Error('Invalid job_scope');
+  if(q.totals!==undefined){if(!q.totals||typeof q.totals!=='object'||Array.isArray(q.totals))throw new Error('Invalid totals');for(const k of ['ex','gst','inc'])numberValue(q.totals[k],'total '+k,Number.MAX_VALUE);}
+  const candidate=structuredClone(state),seen=new Set();let updated=0,added=0;
+  for(const k of ['delivery_mode','labour_rate','margin_pct','setup_ex','contingency_ex','days_on_site','earliest_start','prepared_by','site_visit_needed','sections','letter','assumptions','exclusions','questions','gst_registered'])if(q[k]!==undefined)candidate[k]=q[k];
+  q.items.forEach(it=>{
+    if(!it || typeof it.id!=='string'||!it.id||seen.has(it.id))throw new Error('Duplicate or missing id');seen.add(it.id);
+    for(const k of ['qty','rate_ex','amount_ex','cost_ex','hours','materials_ex','contractor_ex','margin_pct','price_override'])if(it[k]!==undefined && !(['margin_pct','price_override'].includes(k)&&it[k]===null))numberValue(it[k],it.id+' '+k,k==='hours'?1000:k==='qty'?100000:k==='margin_pct'?90:['cost_ex','amount_ex','rate_ex'].includes(k)?Number.MAX_VALUE:1000000);
+    if(it.qty===undefined)throw new Error(it.id+': quantity required');
+    for(const k of ['description','unit','notes'])if(it[k]!==undefined&&typeof it[k]!=='string')throw new Error(it.id+': invalid '+k);
+    if(it.included!==undefined&&typeof it.included!=='boolean')throw new Error('Invalid included flag');
+    const existing=candidate.lines.find(l=>l.id===it.id);let l=existing;
+    if(l)updated++;else{added++;l={id:it.id,item:'',scope:'',qty:0,unit:'item',notes:'',included:true,custom:true,photos:[]};candidate.lines.push(l);}
+    Object.assign(l,{qty:it.qty,item:it.description??l.item,unit:it.unit??l.unit,notes:it.notes??l.notes,included:it.included??true,hours:it.hours??0,materials_ex:it.materials_ex??0,contractor_ex:it.contractor_ex??0,margin_pct:it.margin_pct??null,price_override:it.price_override??null});
+    const costs=['hours','materials_ex','contractor_ex'].some(k=>it[k]!=null);
+    if(it.price_override!=null && (l.hours||l.materials_ex||l.contractor_ex))throw new Error('Price override requires no cost inputs');
+    if(!costs && it.price_override==null){if(it.amount_ex===undefined)throw new Error(it.id+': price or cost inputs required');if(it.rate_ex!==undefined&&Math.abs(roundMoney(it.qty*it.rate_ex)-it.amount_ex)>.02)throw new Error(it.id+': quantity × rate does not match amount');l.price_override=it.amount_ex;}
+  });
+  candidate.custom_counter=Math.max(candidate.custom_counter,...candidate.lines.map(l=>/^X\d+$/.test(l.id)?Number(l.id.slice(1)):0));
+  // Validate the entire candidate before mutating the live quote.
+  candidate.lines=candidate.lines.map(normalLine);candidate.labour_rate=candidate.labour_rate==null?null:n(candidate.labour_rate);candidate.margin_pct=candidate.margin_pct==null?null:n(candidate.margin_pct);
+  if(q.sections===undefined){for(const l of candidate.lines)if(l.included&&!candidate.sections.some(s=>s.line_ids.includes(l.id))){if(candidate.sections.length>=12)candidate.sections.at(-1).line_ids.push(l.id);else candidate.sections.push({name:l.item,description:'',points:[],tag:'Required',line_ids:[l.id]});}}
+  for(const k of ['setup_ex','contingency_ex','days_on_site'])if(q[k]===undefined)candidate[k]=numericState()[k];
+  validateQuote(candidate);
+  if(candidate.lines.some(l=>l.included&&!candidate.sections.some(s=>s.line_ids.includes(l.id))))throw new Error('Each included line must belong to an option');
+  const missing=job.scope.filter(s=>!seen.has(s.id)).map(s=>s.id);
+  return {candidate,updated,added,missing};
+}
+// The quote file carries a placeholder JSON block before the current quote, so the LAST block is the answer.
+function returnedJson(text) {const blocks=[...text.matchAll(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/g)];return JSON.parse(blocks.length?blocks.at(-1)[1]:text);}
+$('upFile').onchange=async()=>{const file=$('upFile').files[0];if(!file)return;try{if(file.size>300000)throw new Error('File exceeds 300 KB');const text=await file.text(),q=returnedJson(text);const result=importDocument(q);const photos=Object.fromEntries(state.lines.map(l=>[l.id,l.photos]));state=result.candidate;state.lines.forEach(l=>l.photos=photos[l.id]||[]);inputErrors.clear();source='gpt-file';fillExtras();render();await save();$('upMsg').textContent=`Updated ${result.updated} lines; added ${result.added}. Missing scope lines left unchanged: ${result.missing.join(', ')||'none'}. CHECK the preview, press Send to Aaron, and wait for Sent.`;}catch(e){$('upMsg').textContent='File not imported: '+e.message;}$('upFile').value='';};
+</script>
+</body>
+</html>

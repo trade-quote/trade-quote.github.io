@@ -40,7 +40,7 @@ button:disabled{opacity:.5;cursor:not-allowed}input,textarea,select{font-size:16
 @media(max-width:700px){.hub-table thead{display:none}.hub-table,.hub-table tbody,.hub-table tr,.hub-table td{display:block;width:100%}.hub-table tr{border-bottom:1px solid var(--line);padding:8px 0}.hub-table td{padding:3px 0;border:0}.hub-table td:nth-child(3){display:none}.hub-table button{white-space:nowrap;width:auto;margin-top:6px}}
 .meas{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:6px 18px;margin:0 0 12px}.meas dt{color:var(--mut);font-size:13px}.meas dd{margin:0;font-weight:700}
 </style></head><body><header><b>QUOTE HUB</b><small>Every job, trade and version · read-only</small></header><main>
-<section id="login" class="card"><h1>Quote hub</h1><form id="loginForm"><label>ADMIN code<input id="code" type="password" autocomplete="off"></label><p><button>Open hub</button></p></form><p id="loginErr" class="err" role="status"></p></section>
+<section id="login" class="card"><h1>Quote hub</h1><form id="loginForm"><label for="username">Name or email</label><input type="text" name="username" id="username" autocomplete="username" placeholder="e.g. Aaron - Yardspace"><label>ADMIN code<input id="code" type="password" name="password" autocomplete="current-password"></label><p><button type="submit">Open hub</button></p></form><p id="loginErr" class="err" role="status"></p></section>
 <div id="app" hidden><section class="card"><h1>Quotes by job</h1><p>📥 Opened · 🧮 Drafting · 📤 Sent</p><div class="hub-tools"><button id="refresh">Refresh</button><label><input id="live" type="checkbox" checked>Live</label><small id="updated" class="mut" role="status"></small></div><div id="notices" aria-live="polite"></div><p id="hubMsg" role="status"></p><div id="jobs"></div><button id="more" hidden>More jobs</button></section>
 <section class="card" id="versionPanel" hidden><button class="ghost back-to-jobs">Back to jobs</button><h2 id="tradeTitle"></h2><div id="versions"></div></section>
 <section id="proposalPanel" class="card" hidden><div class="preview-tools"><button class="ghost back-to-jobs">Back to jobs</button><h2 id="previewTitle">Proposal preview</h2><p><button id="printQuote" disabled>Final quote (PDF)</button></p><p id="printReason"></p></div><dl class="meas" id="meas"></dl><div id="preview"></div></section></div></main>
@@ -175,7 +175,10 @@ async function listJobs(append=false){
   }finally{listBusy=false;$('more').disabled=false;if(refreshAgain&&signedIn&&!document.hidden){refreshAgain=false;run(()=>listJobs());}else{refreshAgain=false;scheduleLive();}}
 }
 async function run(fn){try{$('hubMsg').textContent='';await fn();}catch(e){$('hubMsg').textContent=e.message;}}
-$('loginForm').onsubmit=async e=>{e.preventDefault();CODE=$('code').value.trim();try{await listJobs();$('code').value='';$('login').hidden=true;$('app').hidden=false;signedIn=true;scheduleLive();}catch(error){$('loginErr').textContent=error.message;}};
+try{$('username').value=localStorage.getItem('tq-hub-username')||'';}catch{}
+$('username').addEventListener('input',()=>{try{localStorage.setItem('tq-hub-username',$('username').value);}catch{}});
+// Same-document back navigation leaves the signed-in view in place.
+$('loginForm').onsubmit=async e=>{e.preventDefault();CODE=$('code').value.trim();try{localStorage.setItem('tq-hub-username',$('username').value);}catch{}try{await listJobs();$('login').hidden=true;$('app').hidden=false;signedIn=true;history.pushState({signedIn:true},'',location.pathname+location.search+'#signed-in');scheduleLive();}catch(error){$('loginErr').textContent=error.message;}};
 $('refresh').onclick=()=>run(()=>listJobs());$('more').onclick=()=>run(()=>listJobs(true));
 $('live').onchange=()=>{scheduleLive();if($('live').checked&&signedIn&&!document.hidden)run(()=>listJobs());};
 document.addEventListener('visibilitychange',()=>{scheduleLive();if(!document.hidden&&signedIn&&$('live').checked)run(()=>listJobs());});

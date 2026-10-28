@@ -49,7 +49,7 @@ label.f{display:block}label.f span{display:block;font-size:12px;color:var(--mut)
 .bub{border-radius:18px;padding:6px 12px;font-size:13px;font-weight:400;line-height:1.35;text-align:left;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;max-width:100%}
 .bub.in{background:var(--or);color:#fff;border:1px solid var(--or)}.bub.out{background:#fff;color:var(--ink);border:1px solid #cbd2d9}.bub.before{box-shadow:-4px 0 0 var(--ink)}
 .bnew{display:flex;gap:6px}.bnew input{flex:1;min-width:0}.bnew button{flex:none}
-details.astext{margin-top:4px}details.astext summary{cursor:pointer;color:var(--mut);font-size:13px;margin-bottom:8px}
+details.versions-drop summary{cursor:pointer;font-weight:600}details.versions-drop[open] summary{margin-bottom:8px}details.astext{margin-top:4px}details.astext summary{cursor:pointer;color:var(--mut);font-size:13px;margin-bottom:8px}
 .addbar{position:sticky;top:0;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;padding:8px 0;margin:8px 0 4px;border-bottom:1px solid var(--line)}#stickySum{font-size:13.5px;color:var(--mut)}#stickySum b{color:var(--ink)}#stickySum b.pr{color:var(--or)}#addBtn{font-size:16px;padding:8px 16px;border-radius:20px;flex:none}
 .addmenu{position:absolute;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:12px;width:min(340px,100%);display:flex;flex-direction:column;gap:8px}.addmenu #matBox{display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px}.addmenu .err{margin:0}.addfoot{position:relative;display:flex;justify-content:flex-end;margin:10px 0 14px}#addBtn2{font-size:16px;padding:8px 16px;border-radius:20px}.addfoot .addmenu{z-index:7}.addmenu{max-height:min(68vh,560px);overflow:auto;overscroll-behavior:contain}.addmenu .exs button{padding:6px 10px;font-size:13.5px}.gptbox{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:10px}.gptbox .mut{font-size:12.5px}
 .matchip{margin-top:4px;font-size:12px;color:var(--mut);display:flex;gap:3px;align-items:center;justify-content:flex-end;white-space:nowrap}#lines .matchip input{width:64px!important;padding:2px 4px;font-size:13px;text-align:right}.matchip button{padding:0 4px;background:none;color:var(--mut);border:0;font-weight:400}
@@ -84,7 +84,8 @@ details.astext{margin-top:4px}details.astext summary{cursor:pointer;color:var(--
  <section id="login" class="card">
   <h1>Enter your code</h1>
   <p class="mut">You were sent a code for this job.</p>
-  <form id="loginForm"><input id="code" autocomplete="off" autocapitalize="characters" placeholder="e.g. RAW-7K2Q-9D3M" aria-label="Access code">
+  <form id="loginForm"><label for="username">Name or email</label><input type="text" name="username" id="username" autocomplete="username" placeholder="Your name">
+  <input id="code" type="password" name="password" autocomplete="current-password" autocapitalize="characters" placeholder="e.g. RAW-7K2Q-9D3M" aria-label="Access code">
   <p><button type="submit">Open the job</button></p></form>
   <div id="loginErr" class="err" hidden></div>
  </section>
@@ -108,7 +109,6 @@ details.astext{margin-top:4px}details.astext summary{cursor:pointer;color:var(--
    </div>
   </section>
 
-  <section class="card"><h2>Versions</h2><div id="versions"></div><p id="versionMsg" role="status"></p></section>
   <section class="card">
    <h2>Who does the work, and your numbers</h2>
    <div class="seg" role="group" aria-label="Who does the work"><button id="mInt" class="on">Our team</button><button id="mCon">A contractor</button></div>
@@ -191,6 +191,7 @@ details.astext{margin-top:4px}details.astext summary{cursor:pointer;color:var(--
    <b>Send this quote?</b> <span id="confirmTotal"></span>. You can still change it afterwards and send again.
    <p><button id="yesSend">Yes, send it</button> <button class="ghost" id="noSend">Not yet</button></p>
   </div>
+  <details class="card versions-drop"><summary>Version history</summary><div id="versions"></div><p id="versionMsg" role="status"></p></details>
  </div>
 </main>
 <div class="bar" id="bar" hidden>
@@ -253,9 +254,13 @@ async function demo(action, extra) {
   }
 }
 
+try { $('username').value = localStorage.getItem('tq-username') || ''; } catch {}
+$('username').addEventListener('input', () => { try { localStorage.setItem('tq-username', $('username').value); } catch {} });
+// Same-document back navigation leaves the signed-in view in place.
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('loginErr').hidden = true; CODE = $('code').value.trim();
-  try { await open(); } catch (err) { $('loginErr').textContent = err.message; $('loginErr').hidden = false; }
+  try { localStorage.setItem('tq-username', $('username').value); } catch {}
+  try { await open(); history.pushState({signedIn:true},'',location.pathname+location.search+'#signed-in'); } catch (err) { $('loginErr').textContent = err.message; $('loginErr').hidden = false; }
 });
 
 // The brand arrives with the job, after a valid code; the signed-out page stays neutral.
@@ -842,7 +847,7 @@ async function downloadVersion(version) {
   try {
     if(version===undefined){clearTimeout(saveTimer);await save();await saveChain;if(inputErrors.size||JSON.stringify(payload())!==lastSaved)throw new Error('Save or fix the current changes before downloading');version=workingVersion;}
     const {md,filename}=await call('instructions',version==null?{}:{version});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));a.download=filename||(job.id+'-quote.md');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  }catch(e){$('versionMsg').textContent=e.message;}
+  }catch(e){$('versionMsg').textContent=e.message;$('versionMsg').closest('details').open=true;}
 }
 $('versions').onclick=async e=>{try{const d=e.target.dataset;if(d.openVersion)await openVersion(+d.openVersion);if(d.fileVersion)await downloadVersion(+d.fileVersion);}catch(error){$('versionMsg').textContent=error.message;}};
 function renderPreview() {
